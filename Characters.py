@@ -1,8 +1,17 @@
 class Player:
-    def __init__(self) -> None:
+    def __init__(self, currency=150) -> None:
         self.hand = []
         self.turn = 0
-        self.currency = 0
+        self.currency = currency
+    
+    @property
+    def currency(self) -> int:
+        return self._currency
+    
+    @currency.setter
+    def currency(self, value) -> int:
+        if value > 0:
+            self._currency = value
 
     def hit(self, deck) -> None:
         if len(deck.deck) < 1:
