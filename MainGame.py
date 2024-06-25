@@ -17,11 +17,6 @@ def getInput(prompt, type=str, allowActions=False):
             giveMoney()
             continue
 
-        elif command in PLAYERACTION and allowActions:
-            if command == "hit":
-                player.hit()
-                return
-
         if type == int:
             try:
                 return int(userInput)
@@ -52,7 +47,6 @@ def intro():
     deck.generateDeck()
     sleep(1.5)
     print("Deck successfully shuffled!")
-
 
 def giveMoney():
     amtMoney = getInput("\nHow much money would you like to be given: ", int)
@@ -105,6 +99,45 @@ def payout(winStatus, bet):
         print(f"Your new balance is ${player.currency}")
         return
     
+def dealCards():
+    for i in range(2):
+        print("Dealer: ")
+        dealer.hit(deck)
+
+        print("Player:")
+        player.hit(deck)
+
+        print("\n")
+    
+def getAction():
+    while True:
+        value = player.value
+
+        if value == 21:
+            print("You got Blackjack!")
+            return 
+        
+        elif value > 21:
+            print("You busted")
+            return
+        
+        action = getInput("\nWhat would you like to do: ")
+        if action == "exit":
+            return
+        
+        if action == "hit":
+            player.hit(deck)
+        
+        elif action == "stand":
+            return
+        
+        else:
+            player.hit(deck)
+            return
+
+def getWinner():
+    pass
+
 
 ########################################## MAIN ##########################################
 
@@ -115,9 +148,17 @@ deck = Deck()
 running = True
 
 # Intro gets ran outside of loop so the deck isn't reshuffled after every game
+
 intro()
 
 # Main gameplay loop
 while running:
-    playerBet = getBet()
+    #playerBet = getBet()
+
+    # Dealer deals the cards
+    deal = dealCards()
+
+    # Player decides whether to hit, stand, or double
+    playerAction = getAction()
+
     break

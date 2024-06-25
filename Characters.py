@@ -1,7 +1,36 @@
-class Player:
-    def __init__(self, currency=150) -> None:
+import abc
+
+# Super class for the player and character
+class Character(abc.ABC):
+    def __init__(self) -> None:
         self.hand = []
-        self.turn = 0
+        self.value = 0
+
+    def hit(self, deck):
+        if len(deck.deck) < 1:
+            print("Deck is empty.")
+            return
+        
+        card = deck.deck.pop()
+        self.hand.append(card)
+        self.showHand()
+    
+    def showValue(self):
+        return f"Total value - {self.value}"
+
+    @abc.abstractmethod
+    def showHand(self):
+        pass
+    
+    @abc.abstractmethod
+    def handValue(self):
+        pass
+
+
+
+class Player(Character):
+    def __init__(self, currency=150) -> None:
+        super().__init__()
         self.currency = currency
     
     @property
@@ -13,32 +42,26 @@ class Player:
         if value > 0:
             self._currency = value
 
-    def hit(self, deck) -> None:
-        if len(deck.deck) < 1:
-            print("Deck is empty.")
-            return
-        
-        card = deck.deck.pop()
-        self.hand.append(card)
-        self.showHand()
 
-    def handValue(self) -> str:
-        totalValue = 0
+    def handValue(self) -> int:
         numAces = 0
+        currentValue = 0
 
         for card in self.hand:
-            totalValue += card[1]
+            currentValue += card[1]
             if "Ace" in card[0]:
                 numAces += 1
 
         # If a player has an Ace and would bust
         # Ace value goes from 11 to 1
-        while totalValue > 21 and numAces > 0:
-            totalValue -= 10
+        while currentValue > 21 and numAces > 0:
+            currentValue -= 10
             numAces -= 1
+        
+        self.value = currentValue
 
-        return f"Total Value - {totalValue}\n"
-    
+        return self.value
+
     def showHand(self) -> None:
         for card in self.hand:
             print(card[0])
@@ -48,7 +71,7 @@ class Player:
         
 
 
-class Dealer(Player):
+class Dealer(Character):
     def __init__(self) -> None:
         super().__init__()
 
@@ -66,21 +89,24 @@ class Dealer(Player):
         print(self.handValue(revealFull))
 
     def handValue(self, revealFull=False) -> str:
-        totalValue = 0
         numAces = 0
+        currentValue = 0
 
         # Only count the 2nd card's value until dealer reveals first card
         cardsToCount = self.hand if revealFull else self.hand[1:]
         
         for card in cardsToCount:
-            totalValue += card[1]
+            currentValue += card[1]
             if "Ace" in card[0]:
                 numAces += 1
 
         # When player has more than 1 Ace or would bust
         # Ace value goes from 11 to 1
-        while totalValue > 21 and numAces > 1:
-            totalValue -= 10
+        while currentValue > 21 and numAces > 1:
+            currentValue -= 10
             numAces -= 1
 
-        return f"Total Value - {totalValue}\n"
+        self.value = currentValue
+        
+        return self.value
+    
