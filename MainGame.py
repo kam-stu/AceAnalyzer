@@ -71,9 +71,68 @@ def getBet() -> int:
             break
     
     return bet
+    
+def dealCards():
+    for i in range(2):
+        print("Dealer: ")
+        dealer.hit(deck)
 
+        print("Player:")
+        player.hit(deck)
+
+        print("\n")
+    
+def getAction():
+    while True:
+        player.value
+
+        if player.value == 21:
+            print("You got Blackjack!")
+            return 
+        
+        elif player.value > 21:
+            print("You busted")
+            return
+        
+        action = getInput("What would you like to do: ")
+        print("\n")
+        if action == "exit":
+            return
+        
+        if action == "hit":
+            player.hit(deck)
+        
+        elif action == "stand":
+            return
+        
+        else:
+            player.hit(deck)
+            return
+
+def dealerDraw():
+    print("Dealer Hits:")
+    # Dealer soft-stands at 17
+    while dealer.handValue(True) < 17:
+        dealer.hit(deck, True)
+
+def getWinner():
+    dealerHand = dealer.handValue(True)
+    playerHand = player.handValue()
+
+    if playerHand == 21 and playerHand != dealerHand:
+        return "Blackjack"
+
+    elif playerHand > dealerHand:
+        return "Won"
+    
+    elif dealerHand == playerHand:
+        return "Tied"
+
+    else:
+        return "Loss"
+    
 # Pays the player based on if they won or not
-def payout(winStatus, bet):
+def getPayout(winStatus, bet):
     if winStatus == "Won":
         bet *= 2
         player.currency += bet
@@ -98,45 +157,6 @@ def payout(winStatus, bet):
         print(f"You lost ${bet} credits! ")
         print(f"Your new balance is ${player.currency}")
         return
-    
-def dealCards():
-    for i in range(2):
-        print("Dealer: ")
-        dealer.hit(deck)
-
-        print("Player:")
-        player.hit(deck)
-
-        print("\n")
-    
-def getAction():
-    while True:
-        value = player.value
-
-        if value == 21:
-            print("You got Blackjack!")
-            return 
-        
-        elif value > 21:
-            print("You busted")
-            return
-        
-        action = getInput("\nWhat would you like to do: ")
-        if action == "exit":
-            return
-        
-        if action == "hit":
-            player.hit(deck)
-        
-        elif action == "stand":
-            return
-        
-        else:
-            player.hit(deck)
-            return
-
-def getWinner():
-    pass
 
 
 ########################################## MAIN ##########################################
@@ -153,7 +173,7 @@ intro()
 
 # Main gameplay loop
 while running:
-    #playerBet = getBet()
+    bet = getBet()
 
     # Dealer deals the cards
     deal = dealCards()
@@ -161,4 +181,14 @@ while running:
     # Player decides whether to hit, stand, or double
     playerAction = getAction()
 
+    # Dealer hits after player finalizes actions
+    dealerHit = dealerDraw()
+
+    # Determines winner
+    winner = getWinner()
+
+    # Decides the payout
+    payout = getPayout(winner, bet)
+
     break
+

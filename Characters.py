@@ -17,7 +17,14 @@ class Character(abc.ABC):
     
     def showValue(self):
         return f"Total value - {self.value}"
+    
+    def getAceValue(self, currentValue, numAces):
+        while currentValue > 21 and numAces > 0:
+            currentValue -= 10
+            numAces -= 1
 
+        return currentValue
+    
     @abc.abstractmethod
     def showHand(self):
         pass
@@ -54,9 +61,7 @@ class Player(Character):
 
         # If a player has an Ace and would bust
         # Ace value goes from 11 to 1
-        while currentValue > 21 and numAces > 0:
-            currentValue -= 10
-            numAces -= 1
+        currentValue = self.getAceValue(currentValue, numAces)
         
         self.value = currentValue
 
@@ -74,6 +79,15 @@ class Player(Character):
 class Dealer(Character):
     def __init__(self) -> None:
         super().__init__()
+    
+    def hit(self, deck, revealFull=False):
+        if len(deck.deck) < 1:
+            print("Deck is empty.")
+            return
+        
+        card = deck.deck.pop()
+        self.hand.append(card)
+        self.showHand(revealFull)
 
     def showHand(self, revealFull=False) -> None:
 
@@ -102,9 +116,7 @@ class Dealer(Character):
 
         # When player has more than 1 Ace or would bust
         # Ace value goes from 11 to 1
-        while currentValue > 21 and numAces > 1:
-            currentValue -= 10
-            numAces -= 1
+        currentValue = self.getAceValue(currentValue, numAces)
 
         self.value = currentValue
         
