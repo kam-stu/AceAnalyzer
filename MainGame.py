@@ -4,8 +4,8 @@ from Constants import *
 from time import sleep
 
 # Gets a prompt and sanitizes input
-# Handles exiting the game, running the giveMoney() function, and playerAction (hit, stand, double)
-def getInput(prompt, type=str, allowActions=False):
+# Handles exiting the game, running the giveMoney() function
+def getInput(prompt, type=str):
     while True:
         userInput = input(prompt).strip().lower()
         command = checkCommand(userInput)
@@ -28,10 +28,8 @@ def getInput(prompt, type=str, allowActions=False):
 def checkCommand(answer) -> str:
     if answer in EXITCOMMANDS:
         return "exit"
-    
     if answer == MONEYCOMMAND:
         return "money"
-    
     if answer in PLAYERACTION:
         return answer
 
@@ -76,6 +74,7 @@ def dealCards():
     for i in range(2):
         print("Dealer: ")
         dealer.hit(deck)
+        print("\n")
 
         print("Player:")
         player.hit(deck)
@@ -84,14 +83,13 @@ def dealCards():
     
 def getAction():
     while True:
-        player.value
 
         if player.value == 21:
-            print("You got Blackjack!")
+            print("You got Blackjack!\n")
             return 
         
         elif player.value > 21:
-            print("You busted")
+            print("You busted\n")
             return
         
         action = getInput("What would you like to do: ")
@@ -110,10 +108,21 @@ def getAction():
             return
 
 def dealerDraw():
-    print("Dealer Hits:")
     # Dealer soft-stands at 17
     while dealer.handValue(True) < 17:
+        if dealer.handValue(True) == 21:
+            print("Dealer has Blackjack!\n")
+            break
+        elif dealer.handValue(True) > 21:
+            print("Dealer has busted!\n")
+            break
+        print("Dealer Hits:")
         dealer.hit(deck, True)
+    
+    print("\n")
+
+def revealCard():
+    print(f"Dealer has {dealer.showHand(True)}")
 
 def getWinner():
     dealerHand = dealer.handValue(True)
@@ -128,6 +137,9 @@ def getWinner():
     elif dealerHand == playerHand:
         return "Tied"
 
+    elif playerHand <= 21 and dealerHand > 21:
+        return "Won"
+    
     else:
         return "Loss"
     
@@ -149,6 +161,7 @@ def getPayout(winStatus, bet):
         return
 
     if winStatus == "Tied":
+        player.currency += bet
         print(f"You tied with the dealer and got ${bet} back!")
         print(f"Your new balance is ${player.currency}")
         return
@@ -159,36 +172,39 @@ def getPayout(winStatus, bet):
         return
 
 
+def main():
+    global player, dealer, deck 
+
+    player = Player()
+    dealer = Dealer()
+    deck = Deck()
+
+    running = True
+
+    # Intro gets ran outside of loop so the deck isn't reshuffled after every game
+    intro()
+
+    # Main gameplay loop
+    while running:
+        bet = getBet()
+
+        # Dealer deals the cards
+        deal = dealCards()
+
+        # Player decides whether to hit, stand, or double
+        playerAction = getAction()
+
+        # Dealer hits after player finalizes actions
+        dealerHit = dealerDraw()
+
+        # Determines winner
+        winner = getWinner()
+
+        # Decides the payout
+        payout = getPayout(winner, bet)
+
+        break
+
 ########################################## MAIN ##########################################
-
-player = Player()
-dealer = Dealer()
-deck = Deck()
-
-running = True
-
-# Intro gets ran outside of loop so the deck isn't reshuffled after every game
-
-intro()
-
-# Main gameplay loop
-while running:
-    bet = getBet()
-
-    # Dealer deals the cards
-    deal = dealCards()
-
-    # Player decides whether to hit, stand, or double
-    playerAction = getAction()
-
-    # Dealer hits after player finalizes actions
-    dealerHit = dealerDraw()
-
-    # Determines winner
-    winner = getWinner()
-
-    # Decides the payout
-    payout = getPayout(winner, bet)
-
-    break
-
+if __name__ == "__main__":
+    main()
