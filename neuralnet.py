@@ -8,19 +8,41 @@
 
 import numpy as np
 import pandas as pd
+import tensorflow as tf
+from tensorflow.keras import layers, models
 
 class NeuralNet:
     def __init__(self) -> None:
         self.data = pd.read_csv('blackjack_data.csv')
         self.data = np.array(self.data)
 
-class CustomNet(NeuralNet):
-    def __init__(self) -> None:
-        super().__init__()
-
         # Gets the input type for inputs and outputs and maps it to x (input) and y (output)
         self.x = self.data[:, :3]
         self.y = self.data[:, 3:]
+
+
+class Net(NeuralNet):
+    def __init__(self) -> None:
+        super().__init__()
+
+        model = models.Sequential([
+            layers.Dense(16, activation='relu', input_shape=(3,)),
+            layers.Dense(8, activation='relu'),
+            layers.Dense(8, activation='relu'),
+            layers.Dense(3, activation='sigmoid')
+        ])
+    
+        model.compile(optimizer='adam',
+                      loss='binary_croessentropy',
+                      metrics=['accruacy'])
+    
+    def train(self):
+        self.model.fit(self.x, self.y, epochs=1000)
+
+
+class CustomNet(NeuralNet):
+    def __init__(self) -> None:
+        super().__init__()
 
         # Sets size for all the layers
         self.input_layer = self.x.shape[1]
@@ -33,13 +55,78 @@ class CustomNet(NeuralNet):
         self.weights2 = np.random.rand(self.layer1_size, self.layer2_size)
         self.weights3 = np.random.rand(self.layer2_size, self.output_layer)
 
+        # Sets bias for all layers
+        self.bias1 = np.random.rand(1, self.layer1_size)
+        self.bias2 = np.random.rand(1, self.layer2_size)
+        self.bias3 = np.random.rand(1, self.output_layer)
+
+
         self.learning_rate = 0.1
     
+    def relu(self, z):
+        return np.maximum(0, z)
+    
+    def relu_derivative(self, z):
+        return z > 0
+    
+    def softmax(self, z):
+        e_z = np.exp(z - np.max(z))  # Subtract the max for numerical stability
+        return e_z / np.sum(e_z, axis=1, keepdims=True)
+
     def forward_prop(self):
-        pass
+        # Layer 1
+        self.z1 = np.dot(self.x, self.weights1) + self.bias1
+        self.a1 = self.relu(self.z1)
 
+        # Layer 2
+        self.z2 = np.dot(self.a1, self.weights2) + self.bias2
+        self.a2 = self.relu(self.z2)
 
+        # Layer 3
+        self.z3 = np.dot(self.a2, self.weights3) + self.bias3
+        self.a3 = self.softmax(self.z3)
 
-custom_net = CustomNet()
+    
+    def back_prop(self):
+        m = self.y.shape[0]
+        loss = -np.sum(self.y * np.log(self.a3 + 1e-8)) / m
+
+        # Output layer gradients
+        dZ3 = self.a3 - self.y
+        dW3 = 1 / m * dZ3.dot(self.a1.T)
+        dB3 = 1 / m *np.sum(dZ3)
+        
+        #Hidden layer gradients
+        dz2 = np.dot(dZ3, self.weights3.T) * (self.a2 > 0)  # ReLU derivative
+        dw2 = np.dot(self.a1.T, dz2) / m  # Weight gradient for layer 2
+        db2 = np.sum(dz2, axis=0, keepdims=True) / m  # Bias gradient for layer 2
+
+            # Hidden layer 1 gradients
+        dz1 = np.dot(dz2, self.weights2.T) * (self.a1 > 0)  # ReLU derivative
+        dw1 = np.dot(self.x.T, dz1) / m  # Weight gradient for layer 1
+        db1 = np.sum(dz1, axis=0, keepdims=True) / m  # Bias gradient for layer 1
+
+            # Step 3: Update weights and biases
+        self.weights1 -= self.learning_rate * dw1
+        self.bias1 -= self.learning_rate * db1
+        self.weights2 -= self.learning_rate * dw2
+        self.bias2 -= self.learning_rate * db2
+        self.weights3 -= self.learning_rate * dW3
+        self.bias3 -= self.learning_rate * dB3
+
+        return loss
+    
+    def train(self, epochs=1000):
+        for epoch in range(epochs):
+            self.forward_prop()
+
+            loss = self.back_prop()
+
+            if epoch % 100 == 0:
+                print(f"Epoch: {epoch}, Loss: {loss:.4f}")
+
+if __name__ == "__main__":
+    custom_net = CustomNet()
+    net = Net()
 
 
