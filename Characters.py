@@ -33,8 +33,6 @@ class Character(abc.ABC):
     def handValue(self):
         pass
 
-
-
 class Player(Character):
     def __init__(self, currency=150) -> None:
         super().__init__()
@@ -71,11 +69,6 @@ class Player(Character):
         for card in self.hand:
             print(card[0])
         
-        print(self.handValue())
-        
-        
-
-
 class Dealer(Character):
     def __init__(self) -> None:
         super().__init__()
@@ -99,8 +92,6 @@ class Dealer(Character):
             print("Face-Down Card")
             for card in self.hand[1:]:
                 print(card[0])
-        
-        print(self.handValue(revealFull))
 
     def handValue(self, revealFull=False) -> str:
         numAces = 0

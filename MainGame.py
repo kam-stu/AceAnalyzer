@@ -1,4 +1,5 @@
 from Characters import Player, Dealer
+from NeuralNet import Net
 from Deck import Deck
 from Constants import *
 from time import sleep
@@ -12,6 +13,12 @@ def getInput(prompt, type=str):
 
         if command == "exit":
             return command
+        
+        if command == "train":
+            print("Training neuralNet!")
+            sleep(0.75)
+            neuralNet.train()
+            continue
         
         if command == "money":
             giveMoney()
@@ -30,11 +37,15 @@ def checkCommand(answer) -> str:
         return "exit"
     if answer == MONEYCOMMAND:
         return "money"
+    if answer == TRAINCOMMAND:
+        return "train"
     if answer in PLAYERACTION:
         return answer
 
 # Sets the initial game up
 def intro():
+    print("Welcome to blackjack!!\n")
+    sleep(1.5)
     numDecks = getInput("How many decks would you like to be shuffled: ", int)
     if numDecks == "exit":
         return
@@ -52,7 +63,9 @@ def giveMoney():
         return
     player.currency += int(amtMoney)
 
-def getBet() -> int:
+def getBet():
+    global bet
+
     while True:
         bet = getInput("\nHow much would you like to bet: ", int)
         if bet == "exit":
@@ -74,14 +87,18 @@ def dealCards():
     for i in range(2):
         print("Dealer: ")
         dealer.hit(deck)
+        sleep(2)
         print("\n")
 
         print("Player:")
         player.hit(deck)
+        sleep(2)
 
         print("\n")
     
+
 def getAction():
+    global bet
     while True:
 
         if player.value == 21:
@@ -103,9 +120,14 @@ def getAction():
         elif action == "stand":
             return
         
-        else:
+        elif action == "double":
+            bet *= 2
             player.hit(deck)
             return
+            
+        else:
+            print("Not a known action.  Actions are: stand, hit, double")
+        sleep(0.5)
 
 def dealerDraw():
     # Dealer soft-stands at 17
@@ -118,12 +140,14 @@ def dealerDraw():
             break
         print("Dealer Hits:")
         dealer.hit(deck, True)
+        sleep(2)
     
     print("\n")
 
 def revealCard():
     print(f"Dealer has {dealer.showHand(True)}")
 
+# Contains the logic for win conditions
 def getWinner():
     dealerHand = dealer.handValue(True)
     playerHand = player.handValue()
@@ -131,7 +155,7 @@ def getWinner():
     if playerHand == 21 and playerHand != dealerHand:
         return "Blackjack"
 
-    elif playerHand > dealerHand:
+    elif playerHand <= 21 and playerHand > dealerHand:
         return "Won"
     
     elif dealerHand == playerHand:
@@ -153,7 +177,7 @@ def getPayout(winStatus, bet):
         return
     
     # In blackjack, getting 21 has higher payout rate
-    if winStatus == "BlackJack":
+    if winStatus == "Blackjack":
         bet = int(bet*2.5)
         player.currency += bet
         print(f"Congratulations, you won ${bet} by getting Blackjack!")
@@ -173,11 +197,12 @@ def getPayout(winStatus, bet):
 
 
 def main():
-    global player, dealer, deck 
+    global player, dealer, deck, neuralNet, bet
 
     player = Player()
     dealer = Dealer()
     deck = Deck()
+    neuralNet = Net()
 
     running = True
 
@@ -203,7 +228,8 @@ def main():
         # Decides the payout
         payout = getPayout(winner, bet)
 
-        break
+        if player.currency == 0:
+            print("Game over!  Better luck next time")
 
 ########################################## MAIN ##########################################
 if __name__ == "__main__":

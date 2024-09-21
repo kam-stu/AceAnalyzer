@@ -1,6 +1,6 @@
 # Class holds 2 neural networks - one being a custom neural net only utilizing numpy and pandas
 # The reasoning for this is to gain knowledge on how a neural net works, then build a "traditional" neural net using
-# Pre-exsting technology
+# Tensorflow
 # The custom neural network will use 2 hidden layers with 16 and 8 nodes respectively
 # The other neural networkw will use 3 hidden layers with 16, 8, and 8 nodes respectively
 # I will prompt the user which neural network they would like to use and show the difference in confidence between the two
@@ -25,21 +25,60 @@ class Net(NeuralNet):
     def __init__(self) -> None:
         super().__init__()
 
-        model = models.Sequential([
+        self.model = models.Sequential([
             layers.Dense(16, activation='relu', input_shape=(3,)),
             layers.Dense(8, activation='relu'),
             layers.Dense(8, activation='relu'),
             layers.Dense(3, activation='sigmoid')
         ])
     
-        model.compile(optimizer='adam',
-                      loss='binary_croessentropy',
-                      metrics=['accruacy'])
+        self.model.compile(optimizer='adam',
+                      loss='binary_crossentropy',
+                      metrics=['accuracy'])
     
     def train(self):
         self.model.fit(self.x, self.y, epochs=1000)
+    
+    def get_result(self, prediction):
+        maxVal = 0.00
+        maxIndex = 0
+        for i in range(len(prediction)):
+            print(f"testing i: {i}")
+            for j in range(len(prediction[i])):
+                print(f"testing j index: {j}")
+                print(f"Testing j value: {prediction[0][j]}")
+                print(f"="*50)
+                if maxVal < prediction[0][j]:
+                    maxVal = prediction[0][j]
+                    maxIndex = j
+                    print(f"MaxVal at end of loop {j} = {maxVal}")
+                    print('='*50)
+        
+        print(f"MaxVal = {maxVal}")
+        print(f"MaxIndex = {maxIndex}")
+        print(f"="*50)
 
+        if maxIndex == 0:
+             print("Hit")
+             return
+        elif maxIndex == 1:
+            print("Stand")
+            return
+        elif maxIndex == 2:
+            print("Double")
+            return
+        else:
+            print("Error")
+            return
 
+    
+    def predict_manual(self, player_hand, dealer_hand, card_count):
+        # Prepare the input data as a 2D array
+        manual_input = np.array([[player_hand, dealer_hand, card_count]])
+        
+        # Predict the outcome (hit, stand, double)
+        prediction = self.model.predict(manual_input)
+        return prediction
 class CustomNet(NeuralNet):
     def __init__(self) -> None:
         super().__init__()
@@ -128,5 +167,7 @@ class CustomNet(NeuralNet):
 if __name__ == "__main__":
     custom_net = CustomNet()
     net = Net()
+    prediction = net.predict_manual(0, 20, 0)
+    net.get_result(prediction)
 
 
