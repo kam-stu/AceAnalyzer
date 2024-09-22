@@ -53,14 +53,14 @@ python NeuralNet.py
 python MainGame.py
 ```
 
-```
 Alternatively you can run MainGame.py/NeuralNet.py in an IDE
-```
+
 
 6. Train AI (Alternate Method):
 ```
-use !train command before game fully starts
+!train
 ```
+Use command before game starts
 
 
 ## Usage
@@ -70,9 +70,8 @@ use !train command before game fully starts
 python MainGame.py
 ```
 
-```
 Alternatively you can run MainGame.py in an IDE
-```
+
 
 2. You'll be asked how many decks to shuffle.  Enter the number and follow prompts.
 ```
@@ -120,6 +119,7 @@ Predict() function makes a prediction given 3 values:
 - player hand value
 - dealer hand value
 - current count (always set to 0 for now until implementation)
+
 then returns a list of the values of the output layer
 
 Get_result() function takes a prediction and finds the index value of the highest number (desired output) and returns it.  This is done by getting a minimum value and matching it with its index.
