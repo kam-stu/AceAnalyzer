@@ -58,7 +58,9 @@ def checkCommand(answer) -> str:
 
 # Sets the initial game up
 def intro():
+    print("="*50)
     print("Welcome to blackjack!!\n")
+    print("="*50)
     sleep(1.5)
     numDecks = getInput("How many decks would you like to be shuffled: ", int)
     if numDecks == "exit":
